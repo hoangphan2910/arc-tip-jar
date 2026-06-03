@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ArcPay — Tip</title>
+<script src="https://cdn.jsdelivr.net/npm/viem@2/dist/viem.umd.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
 
@@ -72,10 +73,7 @@
     gap: 8px;
   }
 
-  .logo::before {
-    content: '◈';
-    font-size: 16px;
-  }
+  .logo::before { content: '◈'; font-size: 16px; }
 
   h1 {
     font-family: 'Space Mono', monospace;
@@ -92,9 +90,7 @@
     font-weight: 300;
   }
 
-  .field {
-    margin-bottom: 20px;
-  }
+  .field { margin-bottom: 20px; }
 
   label {
     display: block;
@@ -119,21 +115,11 @@
     transition: border-color 0.2s;
   }
 
-  input:focus {
-    border-color: var(--accent);
-  }
+  input:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--muted); }
 
-  input::placeholder {
-    color: var(--muted);
-  }
-
-  .amount-wrap {
-    position: relative;
-  }
-
-  .amount-wrap input {
-    padding-right: 60px;
-  }
+  .amount-wrap { position: relative; }
+  .amount-wrap input { padding-right: 60px; }
 
   .unit {
     position: absolute;
@@ -143,7 +129,6 @@
     font-family: 'Space Mono', monospace;
     font-size: 11px;
     color: var(--accent);
-    letter-spacing: 0.05em;
   }
 
   .btn {
@@ -162,16 +147,8 @@
     margin-top: 8px;
   }
 
-  .btn:hover:not(:disabled) {
-    background: var(--accent2);
-    transform: translateY(-1px);
-  }
-
-  .btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none;
-  }
+  .btn:hover:not(:disabled) { background: var(--accent2); transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
   .btn-connect {
     background: transparent;
@@ -179,9 +156,7 @@
     color: var(--accent);
   }
 
-  .btn-connect:hover:not(:disabled) {
-    background: rgba(0,255,136,0.08);
-  }
+  .btn-connect:hover:not(:disabled) { background: rgba(0,255,136,0.08); }
 
   .wallet-info {
     display: none;
@@ -219,16 +194,9 @@
     display: block;
   }
 
-  .status a {
-    color: inherit;
-    text-decoration: underline;
-  }
+  .status a { color: inherit; text-decoration: underline; }
 
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 24px 0;
-  }
+  .divider { height: 1px; background: var(--border); margin: 24px 0; }
 
   .network-badge {
     display: inline-flex;
@@ -237,13 +205,11 @@
     font-family: 'Space Mono', monospace;
     font-size: 10px;
     color: var(--muted);
-    letter-spacing: 0.05em;
   }
 
   .network-badge::before {
     content: '';
-    width: 6px;
-    height: 6px;
+    width: 6px; height: 6px;
     border-radius: 50%;
     background: var(--accent);
     box-shadow: 0 0 6px var(--accent);
@@ -251,10 +217,8 @@
 </style>
 </head>
 <body>
-
 <div class="card">
   <div class="logo">ARCPAY</div>
-
   <h1>Send a tip</h1>
   <p class="subtitle">Tip anyone with USDC on Arc Testnet</p>
 
@@ -273,9 +237,12 @@
     </div>
   </div>
 
-  <button class="btn btn-connect" id="mainBtn" onclick="handleClick()">
-    Connect Wallet
-  </button>
+  <div class="field">
+    <label>Message (optional)</label>
+    <input type="text" id="message" placeholder="gm, great work, thanks..." />
+  </div>
+
+  <button class="btn btn-connect" id="mainBtn" onclick="handleClick()">Connect Wallet</button>
 
   <div id="status" class="status"></div>
 
@@ -284,37 +251,34 @@
 </div>
 
 <script>
-const CONTRACT = "0x107c981d626f85919689159127886df6790affb2";
+const CONTRACT = "0x45eb8ec8f9c0b485a1996550b946dba08858091c";
 const USDC = "0x3600000000000000000000000000000000000000";
-const ARC_TESTNET_CHAIN_ID = "0x" + (784592).toString(16);
+const ARC_CHAIN_ID = "0x" + (784592).toString(16);
 
 const TIP_ABI = [{
   name: "tip",
   type: "function",
+  stateMutability: "nonpayable",
   inputs: [
     { name: "to", type: "address" },
-    { name: "amount", type: "uint256" }
-  ]
+    { name: "amount", type: "uint256" },
+    { name: "message", type: "string" }
+  ],
+  outputs: []
 }];
 
 const ERC20_ABI = [{
   name: "approve",
   type: "function",
+  stateMutability: "nonpayable",
   inputs: [
     { name: "spender", type: "address" },
     { name: "amount", type: "uint256" }
-  ]
+  ],
+  outputs: [{ name: "", type: "bool" }]
 }];
 
 let account = null;
-
-function encodeAddress(addr) {
-  return addr.toLowerCase().replace("0x", "").padStart(64, "0");
-}
-
-function encodeUint256(val) {
-  return BigInt(val).toString(16).padStart(64, "0");
-}
 
 function showStatus(msg, type) {
   const el = document.getElementById("status");
@@ -324,16 +288,13 @@ function showStatus(msg, type) {
 
 async function switchToArc() {
   try {
-    await ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: ARC_TESTNET_CHAIN_ID }]
-    });
+    await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: ARC_CHAIN_ID }] });
   } catch (e) {
     if (e.code === 4902) {
       await ethereum.request({
         method: "wallet_addEthereumChain",
         params: [{
-          chainId: ARC_TESTNET_CHAIN_ID,
+          chainId: ARC_CHAIN_ID,
           chainName: "Arc Testnet",
           nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
           rpcUrls: ["https://rpc.testnet.arc.network"],
@@ -345,11 +306,8 @@ async function switchToArc() {
 }
 
 async function handleClick() {
-  if (!account) {
-    await connect();
-  } else {
-    await sendTip();
-  }
+  if (!account) await connect();
+  else await sendTip();
 }
 
 async function connect() {
@@ -371,30 +329,42 @@ async function connect() {
 async function sendTip() {
   const to = document.getElementById("recipient").value.trim();
   const amountRaw = parseFloat(document.getElementById("amount").value);
+  const message = document.getElementById("message").value || "";
 
   if (!to || !to.startsWith("0x")) return showStatus("Invalid address", "error");
   if (!amountRaw || amountRaw <= 0) return showStatus("Invalid amount", "error");
 
   const amount = BigInt(Math.round(amountRaw * 1_000_000));
-
   const btn = document.getElementById("mainBtn");
   btn.disabled = true;
   btn.textContent = "Approving...";
 
   try {
+    const { encodeFunctionData } = viem;
+
     // Approve
-    const approveData = "0x095ea7b3" + encodeAddress(CONTRACT) + encodeUint256(amount);
+    const approveData = encodeFunctionData({
+      abi: ERC20_ABI,
+      functionName: "approve",
+      args: [CONTRACT, amount]
+    });
+
     const approveTx = await ethereum.request({
       method: "eth_sendTransaction",
       params: [{ from: account, to: USDC, data: approveData }]
     });
-    showStatus("Approving USDC... waiting", "success");
+    showStatus("Approving USDC...", "success");
     await waitTx(approveTx);
 
     btn.textContent = "Sending...";
 
     // Tip
-    const tipData = "0xf18d5ba8" + encodeAddress(to) + encodeUint256(amount);
+    const tipData = encodeFunctionData({
+      abi: TIP_ABI,
+      functionName: "tip",
+      args: [to, amount, message]
+    });
+
     const tipTx = await ethereum.request({
       method: "eth_sendTransaction",
       params: [{ from: account, to: CONTRACT, data: tipData }]
@@ -405,6 +375,7 @@ async function sendTip() {
       `Tip sent! <a href="https://testnet.arcscan.app/tx/${tipTx}" target="_blank">View tx ↗</a>`,
       "success"
     );
+    document.getElementById("message").value = "";
   } catch (e) {
     showStatus(e.message || "Transaction failed", "error");
   }
@@ -415,10 +386,7 @@ async function sendTip() {
 
 async function waitTx(hash) {
   while (true) {
-    const receipt = await ethereum.request({
-      method: "eth_getTransactionReceipt",
-      params: [hash]
-    });
+    const receipt = await ethereum.request({ method: "eth_getTransactionReceipt", params: [hash] });
     if (receipt) return receipt;
     await new Promise(r => setTimeout(r, 2000));
   }
