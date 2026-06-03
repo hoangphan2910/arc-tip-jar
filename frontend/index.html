@@ -253,7 +253,7 @@
 <script>
 const CONTRACT = "0x45eb8ec8f9c0b485a1996550b946dba08858091c";
 const USDC = "0x3600000000000000000000000000000000000000";
-const ARC_CHAIN_ID = "0x" + (784592).toString(16);
+const ARC_CHAIN_ID = "0x" + (5042002).toString(16); // 0x4CE752
 
 const TIP_ABI = [{
   name: "tip",
@@ -296,7 +296,7 @@ async function switchToArc() {
         params: [{
           chainId: ARC_CHAIN_ID,
           chainName: "Arc Testnet",
-          nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
+          nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
           rpcUrls: ["https://rpc.testnet.arc.network"],
           blockExplorerUrls: ["https://testnet.arcscan.app"]
         }]
