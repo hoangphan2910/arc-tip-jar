@@ -4,216 +4,43 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ArcPay — Tip</title>
-<script src="https://cdn.jsdelivr.net/npm/viem@2/dist/viem.umd.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
-
   :root {
-    --bg: #0a0a0a;
-    --surface: #111111;
-    --border: #222222;
-    --accent: #00ff88;
-    --accent2: #00cc6a;
-    --text: #f0f0f0;
-    --muted: #555555;
-    --error: #ff4444;
+    --bg: #0a0a0a; --surface: #111111; --border: #222222;
+    --accent: #00ff88; --accent2: #00cc6a; --text: #f0f0f0;
+    --muted: #555555; --error: #ff4444;
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at 60% 20%, rgba(0,255,136,0.04) 0%, transparent 60%);
-    pointer-events: none;
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 40px;
-    width: 100%;
-    max-width: 440px;
-    position: relative;
-  }
-
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    border-radius: 16px 16px 0 0;
-  }
-
-  .logo {
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    color: var(--accent);
-    letter-spacing: 0.1em;
-    margin-bottom: 32px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  body::before { content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(ellipse at 60% 20%, rgba(0,255,136,0.04) 0%, transparent 60%); pointer-events: none; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 440px; position: relative; }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); border-radius: 16px 16px 0 0; }
+  .logo { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--accent); letter-spacing: 0.1em; margin-bottom: 32px; display: flex; align-items: center; gap: 8px; }
   .logo::before { content: '◈'; font-size: 16px; }
-
-  h1 {
-    font-family: 'Space Mono', monospace;
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    letter-spacing: -0.02em;
-  }
-
-  .subtitle {
-    color: var(--muted);
-    font-size: 14px;
-    margin-bottom: 32px;
-    font-weight: 300;
-  }
-
+  h1 { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.02em; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 32px; font-weight: 300; }
   .field { margin-bottom: 20px; }
-
-  label {
-    display: block;
-    font-size: 11px;
-    font-family: 'Space Mono', monospace;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 16px;
-    color: var(--text);
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
+  label { display: block; font-size: 11px; font-family: 'Space Mono', monospace; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; color: var(--text); font-family: 'Space Mono', monospace; font-size: 13px; outline: none; transition: border-color 0.2s; }
   input:focus { border-color: var(--accent); }
   input::placeholder { color: var(--muted); }
-
   .amount-wrap { position: relative; }
   .amount-wrap input { padding-right: 60px; }
-
-  .unit {
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-  }
-
-  .btn {
-    width: 100%;
-    padding: 14px;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 8px;
-  }
-
+  .unit { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); }
+  .btn { width: 100%; padding: 14px; background: var(--accent); color: #000; border: none; border-radius: 8px; font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; letter-spacing: 0.05em; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
   .btn:hover:not(:disabled) { background: var(--accent2); transform: translateY(-1px); }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
-  .btn-connect {
-    background: transparent;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-  }
-
+  .btn-connect { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
   .btn-connect:hover:not(:disabled) { background: rgba(0,255,136,0.08); }
-
-  .wallet-info {
-    display: none;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-    margin-bottom: 20px;
-    word-break: break-all;
-  }
-
-  .status {
-    margin-top: 16px;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-family: 'Space Mono', monospace;
-    display: none;
-  }
-
-  .status.success {
-    background: rgba(0,255,136,0.08);
-    border: 1px solid rgba(0,255,136,0.2);
-    color: var(--accent);
-    display: block;
-  }
-
-  .status.error {
-    background: rgba(255,68,68,0.08);
-    border: 1px solid rgba(255,68,68,0.2);
-    color: var(--error);
-    display: block;
-  }
-
+  .wallet-info { display: none; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); margin-bottom: 20px; word-break: break-all; }
+  .status { margin-top: 16px; padding: 12px 16px; border-radius: 8px; font-size: 13px; font-family: 'Space Mono', monospace; display: none; }
+  .status.success { background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.2); color: var(--accent); display: block; }
+  .status.error { background: rgba(255,68,68,0.08); border: 1px solid rgba(255,68,68,0.2); color: var(--error); display: block; }
   .status a { color: inherit; text-decoration: underline; }
-
   .divider { height: 1px; background: var(--border); margin: 24px 0; }
-
-  .network-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-  }
-
-  .network-badge::before {
-    content: '';
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 6px var(--accent);
-  }
+  .network-badge { display: inline-flex; align-items: center; gap: 6px; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); }
+  .network-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
 </style>
 </head>
 <body>
@@ -221,14 +48,11 @@
   <div class="logo">ARCPAY</div>
   <h1>Send a tip</h1>
   <p class="subtitle">Tip anyone with USDC on Arc Testnet</p>
-
   <div id="walletInfo" class="wallet-info"></div>
-
   <div class="field">
     <label>Recipient address</label>
     <input type="text" id="recipient" placeholder="0x..." />
   </div>
-
   <div class="field">
     <label>Amount</label>
     <div class="amount-wrap">
@@ -236,16 +60,12 @@
       <span class="unit">USDC</span>
     </div>
   </div>
-
   <div class="field">
     <label>Message (optional)</label>
     <input type="text" id="message" placeholder="gm, great work, thanks..." />
   </div>
-
   <button class="btn btn-connect" id="mainBtn" onclick="handleClick()">Connect Wallet</button>
-
   <div id="status" class="status"></div>
-
   <div class="divider"></div>
   <span class="network-badge">Arc Testnet</span>
 </div>
@@ -253,30 +73,7 @@
 <script>
 const CONTRACT = "0x45eb8ec8f9c0b485a1996550b946dba08858091c";
 const USDC = "0x3600000000000000000000000000000000000000";
-const ARC_CHAIN_ID = "0x" + (5042002).toString(16); // 0x4CE752
-
-const TIP_ABI = [{
-  name: "tip",
-  type: "function",
-  stateMutability: "nonpayable",
-  inputs: [
-    { name: "to", type: "address" },
-    { name: "amount", type: "uint256" },
-    { name: "message", type: "string" }
-  ],
-  outputs: []
-}];
-
-const ERC20_ABI = [{
-  name: "approve",
-  type: "function",
-  stateMutability: "nonpayable",
-  inputs: [
-    { name: "spender", type: "address" },
-    { name: "amount", type: "uint256" }
-  ],
-  outputs: [{ name: "", type: "bool" }]
-}];
+const ARC_CHAIN_ID = "0x4cef52";
 
 let account = null;
 
@@ -284,6 +81,36 @@ function showStatus(msg, type) {
   const el = document.getElementById("status");
   el.className = "status " + type;
   el.innerHTML = msg;
+}
+
+// Manual ABI encoding
+function padLeft(hex, len) { return hex.padStart(len, "0"); }
+function encodeAddress(addr) { return padLeft(addr.toLowerCase().replace("0x",""), 64); }
+function encodeUint256(val) { return padLeft(BigInt(val).toString(16), 64); }
+
+function encodeStringArg(str, offset) {
+  const bytes = new TextEncoder().encode(str);
+  const lenHex = padLeft(bytes.length.toString(16), 64);
+  let dataHex = "";
+  for (const b of bytes) dataHex += b.toString(16).padStart(2, "0");
+  dataHex = dataHex.padEnd(Math.ceil(dataHex.length / 64) * 64, "0");
+  return lenHex + dataHex;
+}
+
+function encodeTip(to, amount, message) {
+  // tip(address,uint256,string)
+  // selector = keccak256("tip(address,uint256,string)") first 4 bytes
+  const selector = "0xb008c34e"; // precomputed
+  const offset = padLeft("60", 64); // string starts at offset 96 (0x60)
+  const addrEnc = encodeAddress(to);
+  const amtEnc = encodeUint256(amount);
+  const strEnc = encodeStringArg(message);
+  return selector + addrEnc + amtEnc + offset + strEnc;
+}
+
+function encodeApprove(spender, amount) {
+  // approve(address,uint256) = 0x095ea7b3
+  return "0x095ea7b3" + encodeAddress(spender) + encodeUint256(amount);
 }
 
 async function switchToArc() {
@@ -322,7 +149,7 @@ async function connect() {
     btn.textContent = "Send Tip";
     btn.classList.remove("btn-connect");
   } catch (e) {
-    showStatus("Connection failed", "error");
+    showStatus(e.message || "Connection failed", "error");
   }
 }
 
@@ -340,15 +167,7 @@ async function sendTip() {
   btn.textContent = "Approving...";
 
   try {
-    const { encodeFunctionData } = viem;
-
-    // Approve
-    const approveData = encodeFunctionData({
-      abi: ERC20_ABI,
-      functionName: "approve",
-      args: [CONTRACT, amount]
-    });
-
+    const approveData = encodeApprove(CONTRACT, amount);
     const approveTx = await ethereum.request({
       method: "eth_sendTransaction",
       params: [{ from: account, to: USDC, data: approveData }]
@@ -358,23 +177,14 @@ async function sendTip() {
 
     btn.textContent = "Sending...";
 
-    // Tip
-    const tipData = encodeFunctionData({
-      abi: TIP_ABI,
-      functionName: "tip",
-      args: [to, amount, message]
-    });
-
+    const tipData = encodeTip(to, amount, message);
     const tipTx = await ethereum.request({
       method: "eth_sendTransaction",
       params: [{ from: account, to: CONTRACT, data: tipData }]
     });
     await waitTx(tipTx);
 
-    showStatus(
-      `Tip sent! <a href="https://testnet.arcscan.app/tx/${tipTx}" target="_blank">View tx ↗</a>`,
-      "success"
-    );
+    showStatus(`Tip sent! <a href="https://testnet.arcscan.app/tx/${tipTx}" target="_blank">View tx ↗</a>`, "success");
     document.getElementById("message").value = "";
   } catch (e) {
     showStatus(e.message || "Transaction failed", "error");
