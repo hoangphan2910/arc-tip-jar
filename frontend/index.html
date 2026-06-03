@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArcPay — Tip</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --border: #222222;
+    --accent: #00ff88;
+    --accent2: #00cc6a;
+    --text: #f0f0f0;
+    --muted: #555555;
+    --error: #ff4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 60% 20%, rgba(0,255,136,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    width: 100%;
+    max-width: 440px;
+    position: relative;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo::before {
+    content: '◈';
+    font-size: 16px;
+  }
+
+  h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus {
+    border-color: var(--accent);
+  }
+
+  input::placeholder {
+    color: var(--muted);
+  }
+
+  .amount-wrap {
+    position: relative;
+  }
+
+  .amount-wrap input {
+    padding-right: 60px;
+  }
+
+  .unit {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+
+  .btn:hover:not(:disabled) {
+    background: var(--accent2);
+    transform: translateY(-1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-connect {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+  }
+
+  .btn-connect:hover:not(:disabled) {
+    background: rgba(0,255,136,0.08);
+  }
+
+  .wallet-info {
+    display: none;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 20px;
+    word-break: break-all;
+  }
+
+  .status {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'Space Mono', monospace;
+    display: none;
+  }
+
+  .status.success {
+    background: rgba(0,255,136,0.08);
+    border: 1px solid rgba(0,255,136,0.2);
+    color: var(--accent);
+    display: block;
+  }
+
+  .status.error {
+    background: rgba(255,68,68,0.08);
+    border: 1px solid rgba(255,68,68,0.2);
+    color: var(--error);
+    display: block;
+  }
+
+  .status a {
+    color: inherit;
+    text-decoration: underline;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+
+  .network-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .network-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">ARCPAY</div>
+
+  <h1>Send a tip</h1>
+  <p class="subtitle">Tip anyone with USDC on Arc Testnet</p>
+
+  <div id="walletInfo" class="wallet-info"></div>
+
+  <div class="field">
+    <label>Recipient address</label>
+    <input type="text" id="recipient" placeholder="0x..." />
+  </div>
+
+  <div class="field">
+    <label>Amount</label>
+    <div class="amount-wrap">
+      <input type="number" id="amount" placeholder="1.00" min="0.01" step="0.01" />
+      <span class="unit">USDC</span>
+    </div>
+  </div>
+
+  <button class="btn btn-connect" id="mainBtn" onclick="handleClick()">
+    Connect Wallet
+  </button>
+
+  <div id="status" class="status"></div>
+
+  <div class="divider"></div>
+  <span class="network-badge">Arc Testnet</span>
+</div>
+
+<script>
+const CONTRACT = "0x107c981d626f85919689159127886df6790affb2";
+const USDC = "0x3600000000000000000000000000000000000000";
+const ARC_TESTNET_CHAIN_ID = "0x" + (784592).toString(16);
+
+const TIP_ABI = [{
+  name: "tip",
+  type: "function",
+  inputs: [
+    { name: "to", type: "address" },
+    { name: "amount", type: "uint256" }
+  ]
+}];
+
+const ERC20_ABI = [{
+  name: "approve",
+  type: "function",
+  inputs: [
+    { name: "spender", type: "address" },
+    { name: "amount", type: "uint256" }
+  ]
+}];
+
+let account = null;
+
+function encodeAddress(addr) {
+  return addr.toLowerCase().replace("0x", "").padStart(64, "0");
+}
+
+function encodeUint256(val) {
+  return BigInt(val).toString(16).padStart(64, "0");
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById("status");
+  el.className = "status " + type;
+  el.innerHTML = msg;
+}
+
+async function switchToArc() {
+  try {
+    await ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: ARC_TESTNET_CHAIN_ID }]
+    });
+  } catch (e) {
+    if (e.code === 4902) {
+      await ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+          chainId: ARC_TESTNET_CHAIN_ID,
+          chainName: "Arc Testnet",
+          nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
+          rpcUrls: ["https://rpc.testnet.arc.network"],
+          blockExplorerUrls: ["https://testnet.arcscan.app"]
+        }]
+      });
+    }
+  }
+}
+
+async function handleClick() {
+  if (!account) {
+    await connect();
+  } else {
+    await sendTip();
+  }
+}
+
+async function connect() {
+  if (!window.ethereum) return showStatus("MetaMask not found", "error");
+  try {
+    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+    account = accounts[0];
+    await switchToArc();
+    document.getElementById("walletInfo").style.display = "block";
+    document.getElementById("walletInfo").textContent = account;
+    const btn = document.getElementById("mainBtn");
+    btn.textContent = "Send Tip";
+    btn.classList.remove("btn-connect");
+  } catch (e) {
+    showStatus("Connection failed", "error");
+  }
+}
+
+async function sendTip() {
+  const to = document.getElementById("recipient").value.trim();
+  const amountRaw = parseFloat(document.getElementById("amount").value);
+
+  if (!to || !to.startsWith("0x")) return showStatus("Invalid address", "error");
+  if (!amountRaw || amountRaw <= 0) return showStatus("Invalid amount", "error");
+
+  const amount = BigInt(Math.round(amountRaw * 1_000_000));
+
+  const btn = document.getElementById("mainBtn");
+  btn.disabled = true;
+  btn.textContent = "Approving...";
+
+  try {
+    // Approve
+    const approveData = "0x095ea7b3" + encodeAddress(CONTRACT) + encodeUint256(amount);
+    const approveTx = await ethereum.request({
+      method: "eth_sendTransaction",
+      params: [{ from: account, to: USDC, data: approveData }]
+    });
+    showStatus("Approving USDC... waiting", "success");
+    await waitTx(approveTx);
+
+    btn.textContent = "Sending...";
+
+    // Tip
+    const tipData = "0xf18d5ba8" + encodeAddress(to) + encodeUint256(amount);
+    const tipTx = await ethereum.request({
+      method: "eth_sendTransaction",
+      params: [{ from: account, to: CONTRACT, data: tipData }]
+    });
+    await waitTx(tipTx);
+
+    showStatus(
+      `Tip sent! <a href="https://testnet.arcscan.app/tx/${tipTx}" target="_blank">View tx ↗</a>`,
+      "success"
+    );
+  } catch (e) {
+    showStatus(e.message || "Transaction failed", "error");
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Send Tip";
+}
+
+async function waitTx(hash) {
+  while (true) {
+    const receipt = await ethereum.request({
+      method: "eth_getTransactionReceipt",
+      params: [hash]
+    });
+    if (receipt) return receipt;
+    await new Promise(r => setTimeout(r, 2000));
+  }
+}
+</script>
+</body>
+</html>
